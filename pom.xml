@@ -635,7 +635,7 @@
         <version>1.6.0</version>
       </extension>
     </extensions>
-
+ <pluginManagement>
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -1131,10 +1131,10 @@
         <artifactId>forbiddenapis</artifactId>
         <version>2.2</version>
       </plugin>
-    </plugins>
+ 
 
-    <pluginManagement>
-      <plugins>
+   
+      
         <!-- keep surefire and failsafe in sync -->
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>

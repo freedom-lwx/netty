@@ -215,6 +215,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
             if (PlatformDependent.javaVersion() >= 7 && option instanceof NioChannelOption) {
                 return NioChannelOption.getOption(jdkChannel(), (NioChannelOption<T>) option);
             }
+            
             return super.getOption(option);
         }
 

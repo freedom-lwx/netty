@@ -29,6 +29,8 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 /**
  * Echoes back any received data from a client.
@@ -49,12 +51,21 @@ public final class EchoServer {
         }
 
         // Configure the server.
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        
+        //这两个EventLoopGroup（事件循环组）是干嘛的
+        //使用不同的事件来通知我们状态的改变或者操作状态的改变。它定义了在整个连接的生命周期里当有事件发生的时候处理的核心抽象
+        //
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1);// 用于服务端接受客户端的连接 参数1是指：只有一个EventLoop,这个循环时间主要做的事情就是不断处理客户端的连接请求
+        EventLoopGroup workerGroup = new NioEventLoopGroup();//用于尽心客户端的SocketChannel的数据读写
+        
+        //
         final EchoServerHandler serverHandler = new EchoServerHandler();
         try {
+        	// 启动器 帮助Netty用户更加方便的组装和配置，更方便地启动应用，通过它来连接到一个主机和端口上，也可以通过它绑定到本地的端口上
             ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
+            b.group(bossGroup, workerGroup) /* 使用两个 EventLoopGroup 对象( 当然这个对象可以引用同一个对象 )：
+            									第一个用于处理它本地 Socket连接的 IO 事件处理，
+            									而第二个责负责处理远程客户端的 IO 事件处理。*/
              .channel(NioServerSocketChannel.class)
              .option(ChannelOption.SO_BACKLOG, 100)
              .handler(new LoggingHandler(LogLevel.INFO))
@@ -72,7 +83,15 @@ public final class EchoServer {
 
             // Start the server.
             ChannelFuture f = b.bind(PORT).sync();
-
+//            f.addListener(new GenericFutureListener<Future<? super Void>>() {
+//				@Override
+//				public void operationComplete(Future<? super Void> future) throws Exception {
+//					// TODO Auto-generated method stub
+//					
+//				}
+//			});
+            
+  
             // Wait until the server socket is closed.
             f.channel().closeFuture().sync();
         } finally {
