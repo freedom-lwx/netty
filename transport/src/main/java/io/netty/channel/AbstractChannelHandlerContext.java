@@ -207,6 +207,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
         }
     }
 
+    /* 正常情况下只会被上一个ctx调用 */
     private void invokeChannelActive() {
         if (invokeHandler()) {
             try {

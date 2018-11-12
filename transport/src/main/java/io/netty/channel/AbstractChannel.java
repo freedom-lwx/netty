@@ -497,6 +497,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 				// is needed as the
 				// user may already fire events through the pipeline in the
 				// ChannelFutureListener.
+				//该函数在AbstactBootstrap#bind的过程中,首先默认处理在主过程中bind方法被调用之前设置的一系列Field,例如属性 选择 Handler ,所以在处理完实际
+				//的功能逻辑后,首先选择通知: Handler已经添加入该serverbootStrap的serverchannel 1:1 对应的 pipeline中
+
 				pipeline.invokeHandlerAddedIfNeeded();
 
 				safeSetSuccess(promise);

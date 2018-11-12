@@ -293,7 +293,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 		return doBind(localAddress);
 	}
 
-	private ChannelFuture doBind(final SocketAddress localAddress) {
+	private ChannelFuture    doBind(final SocketAddress localAddress) {
 		final ChannelFuture regFuture = initAndRegister();
 		final Channel channel = regFuture.channel();
 		if (regFuture.cause() != null) {

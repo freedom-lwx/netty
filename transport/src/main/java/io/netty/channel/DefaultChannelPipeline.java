@@ -42,6 +42,9 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 /**
  * The default {@link ChannelPipeline} implementation.  It is usually created
  * by a {@link Channel} implementation when the {@link Channel} is created.
+ *
+ * 存储结构是双向链表,节点是HandllerContext,头尾是特殊的Context
+ *
  */
 public class DefaultChannelPipeline implements ChannelPipeline {
 
@@ -61,16 +64,31 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     private static final AtomicReferenceFieldUpdater<DefaultChannelPipeline, MessageSizeEstimator.Handle> ESTIMATOR =
             AtomicReferenceFieldUpdater.newUpdater(
                     DefaultChannelPipeline.class, MessageSizeEstimator.Handle.class, "estimatorHandle");
+    /* head 和 tail 节点 */
     final AbstractChannelHandlerContext head;
+    /* head 和 tail 节点 */
     final AbstractChannelHandlerContext tail;
 
+    /* Pipline:Channel = 1:1 */
     private final Channel channel;
+
+
     private final ChannelFuture succeededFuture;
     private final VoidChannelPromise voidPromise;
+
+    /* 是否检测资源泄漏 */
     private final boolean touch = ResourceLeakDetector.isEnabled();
 
+
+    /* Channel与Executor(EventLoop)是 1:1的,这里的子执行器字典可能会出现Channel与ExecutorGroup 1:n 的情况？ 分别对应着不同执行器组
+     * 中的某一个Executor?
+     * */
     private Map<EventExecutorGroup, EventExecutor> childExecutors;
     private volatile MessageSizeEstimator.Handle estimatorHandle;
+
+    /*
+    * 是否初次注册，在第一次注册到EventLoopGroup中并在fireChannelActive执行过程中或是过后置为false
+    * */
     private boolean firstRegistration = true;
 
     /**
@@ -80,14 +98,19 @@ public class DefaultChannelPipeline implements ChannelPipeline {
      * We only keep the head because it is expected that the list is used infrequently and its size is small.
      * Thus full iterations to do insertions is assumed to be a good compromised to saving memory and tail management
      * complexity.
+     *
+     * 某个等着被回调Handler链表,说是很短
      */
     private PendingHandlerCallback pendingHandlerCallbackHead;
 
     /**
      * Set to {@code true} once the {@link AbstractChannel} is registered.Once set to {@code true} the value will never
      * change.
+     * 是否被注册了
      */
     private boolean registered;
+
+
 
     protected DefaultChannelPipeline(Channel channel) {
         this.channel = ObjectUtil.checkNotNull(channel, "channel");
